@@ -27,6 +27,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "prod": "npm run build:lambda",
+    "build:lambda": "netlify-lambda build JobBoardFunctions",
     "start_lambda": "netlify-lambda serve JobBoardFunctions",
     "eject": "react-scripts eject"
   },
