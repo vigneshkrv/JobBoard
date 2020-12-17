@@ -13,9 +13,11 @@ function JobDescription() {
   const { id } = useParams();
   const [job, setJob] = useState({});
   useEffect(() => {
-    axios.get(`http://localhost:8080/api/ID?id=${id}`).then((res) => {
-      setJob(res.data);
-    });
+    axios
+      .get(`https://sheltered-reaches-49122.herokuapp.com/api/ID?id=${id}`)
+      .then((res) => {
+        setJob(res.data);
+      });
   }, []);
 
   console.log(id, job);

@@ -27,7 +27,7 @@ import { default as styl, ThemeProvider } from "styled-components";
 
 const DebugUrl = `http://localhost:8080/api/positions`;
 
-const ProdUrl = `${window.location.href} + /.netlify/functions/positions`;
+const ProdUrl = `https://sheltered-reaches-49122.herokuapp.com/api/positions`;
 
 const prod = true;
 
