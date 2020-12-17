@@ -226,7 +226,7 @@ export default () => {
           }&full_time=${fullTime}`
       )
       .then((res) => {
-        setJobs(jobs);
+        setJobs(res.data);
       });
   };
 
