@@ -31,6 +31,16 @@ router.get(`/positions`, function (req, res) {
   });
 });
 
+router.get("/ID", function (req, res) {
+  let githubJobUrl = new URL(
+    `https://jobs.github.com/positions/${req.query.id}.json`
+  );
+
+  Axios.get(githubJobUrl.href).then((x) => {
+    res.json(x.data);
+  });
+});
+
 var port = process.env.PORT || 8080;
 app.use("/api", router);
 app.listen(port);

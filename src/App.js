@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useEffect, useState } from "react";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Card from "@material-ui/core/Card";
@@ -14,24 +14,42 @@ import Checkbox from "@material-ui/core/Checkbox";
 import FormGroup from "@material-ui/core/FormGroup";
 import Typography from "@material-ui/core/Typography";
 import axios from "axios";
+import Switch from "@material-ui/core/Switch";
 import Paper from "@material-ui/core/Paper";
 import TimeAgo from "react-timeago";
 import "./App.css";
 
+import { List } from "react-virtualized";
+
+import { useHistory } from "react-router-dom";
+
+import { default as styl, ThemeProvider } from "styled-components";
+
 const ApiURL = `http://localhost:8080/api/positions`;
+
+// const ColorTheme = styl`
+//   background-color: #FFFF
+// `;
+
+const ColorTheme = styl.base`
+  color: #131822
+`;
+
+// const T = styl(ColorTheme)`
+// `;
 
 const Typograph = styled(Typography)({
   flexGrow: 1,
 });
 
-const CardJob = styled(Card)({
+/* const CardJob = styled(Card)({
   float: "left",
   minWidth: 300,
   minHeight: 250,
   margin: 30,
-});
+}); */
 
-const CardTypo = styled(Typography)({
+/* const CardTypo = styled(Typography)({
   color: "#5865E0",
   fontWeight: "bold",
   marginLeft: 15,
@@ -40,162 +58,252 @@ const CardTypo = styled(Typography)({
 const CardTypo2 = styled(Typography)({
   fontWeight: "bold",
   color: "rgba(0, 0, 0, 0.54)",
-});
+}); */
 
-const CardGrid = styled(Grid)({
-  justifyContent: "center",
-  marginTop: -10,
-  // height: 150,
-});
+const G = (props) => <Grid {...props}>{props.children}</Grid>;
 
-const MakeCards = (data) => {
-  console.log(data);
+const C = (props) => <Card {...props}>{props.children}</Card>;
+
+const T = (props) => <Typography {...props}>{props.children}</Typography>;
+
+const FG = (props) => <FormGroup {...props}>{props.children}</FormGroup>;
+
+const B = (props) => <Button {...props}>{props.children}</Button>;
+
+const CardTypo = styl(T)`
+color: ${(props) =>
+  props.theme.dark ? "#cfcfcf" : "rgba(0, 0, 0, 0.54)"} !important;
+  font-weight: bold !important;
+  padding:3px;
+`;
+
+const CardGrid = styl(G)`
+    justify-content: center;
+    margin-top: -10px;
+`;
+
+const CardTypoTitle = styl(T)`
+  color: ${(props) => (props.theme.dark ? "#FFFFFF" : "black")} !important;
+  padding:2px
+`;
+
+const CardTypoLocation = styl(T)`
+color: #5865E0;
+font-weight: bold !important;
+margin-left: 15px !important;
+`;
+
+const CardJob = styl(C)` 
+background-color: ${(props) =>
+  props.theme.dark ? "#19212D" : "#FFFF"} !important;
+float: "left";
+min-width: 300px;
+min-height: 270px;
+margin: 30px;
+`;
+
+const Body = styl.div`
+  background-color: ${(props) => (props.theme.dark ? "#131822" : "#F5F6F8")};
+  
+`;
+
+const Form = styl(FG)`
+  justify-content: center;
+  height: 5rem;
+  background-color: ${(props) =>
+    props.theme.dark ? "#131822" : "#F5F6F8"} !important;
+`;
+
+const LoadMoreButton = styl(B)`
+    background-color: #5865E0 !important;
+`;
+// const CardGrid = styled(Grid)({
+//   justifyContent: "center",
+//   marginTop: -10,
+//   // height: 150,
+// });
+
+//({ index, key, style }, jobs, Click)
+const MakeCards = (props, Click) => {
+  // console.log(jobs);
+  // let job = jobs[index];
   return (
-    <Grid item lg={3}>
-      <CardJob key={data.data.id}>
+    <Grid onClick={props.Click} item lg={3}>
+      <CardJob>
         <CardActionArea>
           <CardMedia
             component="img"
             width="100"
             height="120"
-            src={data.data.company_logo}
+            src={props.data.company_logo}
           />
           <CardContent>
-            <CardTypo2 variant="p" component="p">
-              <TimeAgo date={data.data.created_at} /> &#8226; {data.data.type}
-            </CardTypo2>
-            <Typography gutterBottom variant="p" component="h4">
-              {data.data.title}
-            </Typography>
-            <Typography variant="p" color="textSecondary" component="p">
-              {data.data.company}
-            </Typography>
+            <CardTypo variant="p" component="p">
+              <TimeAgo date={props.data.created_at} /> &#8226; {props.data.type}
+            </CardTypo>
+            <CardTypoTitle gutterBottom variant="p" component="h4">
+              {props.data.title}
+            </CardTypoTitle>
+            <CardTypo variant="p" color="textSecondary" component="p">
+              {props.data.company}
+            </CardTypo>
           </CardContent>
 
-          <CardTypo variant="p" component="p">
-            {data.data.location}
-          </CardTypo>
+          <CardTypoLocation variant="p" component="p">
+            {props.data.location}
+          </CardTypoLocation>
         </CardActionArea>
       </CardJob>
     </Grid>
   );
 };
 
-class App extends Component {
-  state = {
-    latitude: null,
-    longitude: null,
-    description: "",
-    location: "",
-    fullTimeChecked: false,
-    jobs: [],
-  };
+export default () => {
+  let [description, setDescription] = useState("");
 
-  componentDidMount() {
-    navigator.geolocation.getCurrentPosition(
-      (position) =>
-        this.setState({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        }),
-      (err) => console.log(err)
-    );
-  }
-  /* `http://localhost:8080/api/positions/currentLocation?lat=${this.state.latitude}&long=${this.state.longitude}` */
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.latitude !== this.state.latitude) {
-      axios.get(ApiURL).then((res) => {
-        this.setState({ jobs: res.data });
+  let [location, setLocation] = useState("");
+
+  let [fullTime, setFullTime] = useState(false);
+
+  let [jobs, setJobs] = useState([]);
+
+  let [theme, setTheme] = useState({ dark: true });
+
+  let [counter, setCounter] = useState(0);
+
+  let history = useHistory();
+
+  useEffect(() => {
+    axios.get(ApiURL).then((res) => {
+      setJobs(res.data);
+    });
+  }, []);
+
+  let handleLoadMore = () => {
+    setCounter((prevCount) => {
+      let count = prevCount + 1;
+      console.log(count);
+      axios.get(ApiURL + `?page=${count}`).then((res) => {
+        setJobs((prevData) => {
+          console.log([...prevData, res.data]);
+          return [...prevData, ...res.data];
+        });
       });
-    }
-  }
 
-  handleChange = () => {
-    this.setState({ fullTimeChecked: !this.state.fullTimeChecked });
+      return count;
+    });
   };
 
-  handleClick = () => {
+  let handleChange = () => {
+    setFullTime(!fullTime);
+  };
+  let onClickJob = (job) => {
+    // console.log(this.props);
+    history.push(`/jobdescription/${job.id}`);
+  };
+  let handleClick = () => {
     axios
       .get(
         ApiURL +
-          `?description=${
-            this.state.description ? this.state.description : ""
-          }&location=${
-            this.state.location ? this.state.location : ""
-          }&full_time=${this.state.fullTimeChecked}`
+          `?description=${description ? description : ""}&location=${
+            location ? location : ""
+          }&full_time=${fullTime}`
       )
       .then((res) => {
-        this.setState({ jobs: res.data });
+        setJobs(jobs);
       });
   };
 
-  render() {
-    const { jobs } = this.state;
-
-    return (
-      <div>
+  return (
+    <ThemeProvider theme={theme}>
+      <Body>
         <AppBar position="static">
           <Toolbar>
             <Typograph variant="h6">DevJobs</Typograph>
+            <Switch
+              checked={theme.dark}
+              onChange={() => setTheme({ dark: !theme.dark })}
+              color="secondary"
+              name="ThemeChanger"
+              inputProps={{ "aria-label": "primary checkbox" }}
+            />
           </Toolbar>
         </AppBar>
         <CardGrid container>
-          <Grid item lg={8}>
+          <Grid item lg={6}>
             <Paper>
-              <form noValidate autoComplete="off">
-                <TextField
-                  style={{ width: "33%" }}
-                  id="outlined-basic"
-                  label="Filter by Title, Company, Expertise"
-                  variant="outlined"
-                  onChange={(e) => {
-                    this.setState({ description: e.target.value });
-                  }}
+              <Form row>
+                <FormControlLabel
+                  control={
+                    <TextField
+                      id="outlined-basic"
+                      label="Filter by Title, Company, Expertise"
+                      variant="outlined"
+                      onChange={(e) => {
+                        setDescription(e.target.value);
+                      }}
+                    />
+                  }
+                  // label="Filter by Title, Company, Expertise"
                 />
-              </form>
-              <form noValidate autoComplete="off">
-                <TextField
-                  style={{ width: "33%" }}
-                  id="outlined-basic"
-                  label="Filter by location"
-                  variant="outlined"
-                  onChange={(e) => {
-                    this.setState({ location: e.target.value });
-                  }}
+                <FormControlLabel
+                  control={
+                    <TextField
+                      id="outlined-basic"
+                      style={{ width: "150%" }}
+                      label="Filter by location"
+                      variant="outlined"
+                      onChange={(e) => {
+                        setLocation(e.target.value);
+                      }}
+                    />
+                  }
                 />
-              </form>
-              <FormGroup row>
                 <FormControlLabel
                   control={
                     <Checkbox
-                      checked={this.state.fullTimeChecked}
-                      onChange={this.handleChange}
+                      checked={fullTime}
+                      onChange={handleChange}
                       name="checkedB"
                       color="primary"
                     />
                   }
-                  label="Primary"
+                  label="Full Time"
                 />
-                <Button
-                  variant="contained"
-                  style={{ backgroundColor: "#5865E0" }}
-                  onClick={this.handleClick}
-                >
-                  Search
-                </Button>
-              </FormGroup>
+                <FormControlLabel
+                  control={
+                    <Button
+                      variant="contained"
+                      style={{ backgroundColor: "#5865E0" }}
+                      onClick={handleClick}
+                    >
+                      Search
+                    </Button>
+                  }
+                />
+              </Form>
             </Paper>
           </Grid>
         </CardGrid>
+        {/* <Grid container spacing={3}>
+          <List
+            width={400}
+            height={1000}
+            rowHeight={220}
+            rowRenderer={({ index, key, style }) =>
+              MakeCards({ index, key, style }, jobs)
+            }
+            rowCount={jobs.length}
+            overscanRowCount={3}
+          ></List> */}
         <Grid container spacing={3}>
           {jobs &&
             jobs.map((job) => {
-              return <MakeCards data={job} />;
+              return <MakeCards data={job} Click={() => onClickJob(job)} />;
             })}
         </Grid>
-      </div>
-    );
-  }
-}
-
-export default App;
+        <LoadMoreButton onClick={handleLoadMore}>Load More</LoadMoreButton>
+      </Body>
+    </ThemeProvider>
+  );
+};
