@@ -18,9 +18,10 @@ exports.handler = async function (event, context, callback) {
 
     //the whole response has been received, so we just print it out here
     response.on("end", function () {
+      console.log(str);
       callback(null, {
         statusCode: 200,
-        body: str,
+        body: JSON.stringify(str),
       });
     });
   };

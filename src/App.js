@@ -25,7 +25,11 @@ import { useHistory } from "react-router-dom";
 
 import { default as styl, ThemeProvider } from "styled-components";
 
-const ApiURL = `http://localhost:8080/api/positions`;
+const DebugUrl = `http://localhost:8080/api/positions`;
+
+const ProdUrl = `${window.location.href} + /.netlify/functions/positions`;
+
+const prod = true;
 
 // const ColorTheme = styl`
 //   background-color: #FFFF
@@ -174,7 +178,7 @@ export default () => {
   let history = useHistory();
 
   useEffect(() => {
-    axios.get(ApiURL).then((res) => {
+    axios.get(prod ? ProdUrl : DebugUrl).then((res) => {
       setJobs(res.data);
     });
   }, []);
@@ -183,12 +187,14 @@ export default () => {
     setCounter((prevCount) => {
       let count = prevCount + 1;
       console.log(count);
-      axios.get(ApiURL + `?page=${count}`).then((res) => {
-        setJobs((prevData) => {
-          console.log([...prevData, res.data]);
-          return [...prevData, ...res.data];
+      axios
+        .get(prod ? ProdUrl + `?page=${count}` : DebugUrl + `?page=${count}`)
+        .then((res) => {
+          setJobs((prevData) => {
+            console.log([...prevData, res.data]);
+            return [...prevData, ...res.data];
+          });
         });
-      });
 
       return count;
     });
@@ -204,7 +210,7 @@ export default () => {
   let handleClick = () => {
     axios
       .get(
-        ApiURL +
+        (prod ? ProdUrl : DebugUrl) +
           `?description=${description ? description : ""}&location=${
             location ? location : ""
           }&full_time=${fullTime}`
