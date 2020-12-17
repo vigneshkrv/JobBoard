@@ -74,6 +74,15 @@ const FG = (props) => <FormGroup {...props}>{props.children}</FormGroup>;
 
 const B = (props) => <Button {...props}>{props.children}</Button>;
 
+const Text = (props) => (
+  <FormControlLabel {...props}>{props.children}</FormControlLabel>
+);
+
+const CardTextField = styl(Text)`
+color: ${(props) =>
+  props.theme.dark ? "#cfcfcf" : "rgba(0, 0, 0, 0.54)"} !important;
+  `;
+
 const CardTypo = styl(T)`
 color: ${(props) =>
   props.theme.dark ? "#cfcfcf" : "rgba(0, 0, 0, 0.54)"} !important;
@@ -115,11 +124,12 @@ const Form = styl(FG)`
   justify-content: center;
   height: 5rem;
   background-color: ${(props) =>
-    props.theme.dark ? "#131822" : "#F5F6F8"} !important;
+    props.theme.dark ? "#d5e0f5" : "#F5F6F8"} !important;
 `;
 
 const LoadMoreButton = styl(B)`
     background-color: #5865E0 !important;
+    margin-left:50% !important 
 `;
 // const CardGrid = styled(Grid)({
 //   justifyContent: "center",
@@ -171,7 +181,7 @@ export default () => {
 
   let [jobs, setJobs] = useState([]);
 
-  let [theme, setTheme] = useState({ dark: true });
+  let [theme, setTheme] = useState({ dark: false });
 
   let [counter, setCounter] = useState(0);
 
@@ -239,7 +249,7 @@ export default () => {
           <Grid item lg={6}>
             <Paper>
               <Form row>
-                <FormControlLabel
+                <CardTextField
                   control={
                     <TextField
                       id="outlined-basic"
@@ -252,11 +262,10 @@ export default () => {
                   }
                   // label="Filter by Title, Company, Expertise"
                 />
-                <FormControlLabel
+                <CardTextField
                   control={
                     <TextField
                       id="outlined-basic"
-                      style={{ width: "150%" }}
                       label="Filter by location"
                       variant="outlined"
                       onChange={(e) => {
@@ -271,7 +280,7 @@ export default () => {
                       checked={fullTime}
                       onChange={handleChange}
                       name="checkedB"
-                      color="primary"
+                      color="secondary"
                     />
                   }
                   label="Full Time"
