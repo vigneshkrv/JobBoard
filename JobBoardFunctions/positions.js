@@ -6,7 +6,6 @@ exports.handler = async function (event, context, callback) {
 
   for (key of Object.keys(event.queryStringParameters)) {
     githubJobUrl.searchParams.append(key, event.queryStringParameters[key]);
-    console.log(key);
   }
 
   //   console.log(event);
