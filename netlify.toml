@@ -1,2 +1,4 @@
 [build]
   functions = "functions-build"
+
+  command = "CI= npm run build && npm run prod"
