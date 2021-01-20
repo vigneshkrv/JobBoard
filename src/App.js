@@ -179,6 +179,8 @@ export default () => {
 
   let [fullTime, setFullTime] = useState(false);
 
+  let [loadmore, setLoadmore] = useState(false);
+
   let [jobs, setJobs] = useState([]);
 
   let [theme, setTheme] = useState({ dark: false });
@@ -190,6 +192,7 @@ export default () => {
   useEffect(() => {
     axios.get(prod ? ProdUrl : DebugUrl).then((res) => {
       setJobs(res.data);
+      setLoadmore(true);
     });
   }, []);
 
@@ -317,7 +320,9 @@ export default () => {
               return <MakeCards data={job} Click={() => onClickJob(job)} />;
             })}
         </Grid>
-        <LoadMoreButton onClick={handleLoadMore}>Load More</LoadMoreButton>
+        {loadmore && (
+          <LoadMoreButton onClick={handleLoadMore}>Load More</LoadMoreButton>
+        )}
       </Body>
     </ThemeProvider>
   );
