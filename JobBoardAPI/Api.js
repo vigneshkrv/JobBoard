@@ -5,7 +5,9 @@ const { default: Axios } = require("axios");
 var app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({
+    origin: "https://jobsatgit.netlify.app",
+  }));
 
 var router = express.Router();
 router.get(`/positions/currentLocation`, function (req, res) {
